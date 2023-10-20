@@ -14,6 +14,7 @@ export default function HomePage(props) {
   )
 }
 export async function getStaticProps() {
+  console.log("Genereting")
   const dataPath = path.join(process.cwd(), "data", "dummy-data.json")
   const jsonData = await fs.readFile(dataPath)
   const data = JSON.parse(jsonData)
@@ -22,5 +23,6 @@ export async function getStaticProps() {
     props: {
       products: data.products,
     },
+    revalidate: 10,
   }
 }
