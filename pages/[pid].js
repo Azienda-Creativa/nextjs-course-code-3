@@ -4,6 +4,11 @@ import path from "path"
 
 export default function ProductDetailPage(props) {
   const { loadedProduct } = props
+
+  if (!loadedProduct) {
+    return <h1>Loading...</h1>
+  }
+
   return (
     <Fragment>
       <h1>{loadedProduct.title}</h1>
@@ -12,16 +17,25 @@ export default function ProductDetailPage(props) {
   )
 }
 
-export async function getStaticProps(context) {
-  // get id for pre-rendering page on server
-  const { params } = context
-  const productId = params.pid
+async function getData() {
   //parse json data
   const dataPath = path.join(process.cwd(), "data", "dummy-data.json")
   const jsonData = await fs.readFile(dataPath)
   const data = JSON.parse(jsonData)
-  // find product by id
+  return data
+}
+
+export async function getStaticProps(context) {
+  // get id for pre-rendering page on server
+  const { params } = context
+  const productId = params.pid
+  const data = await getData()
+
   const product = data.products.find((product) => product.id === productId)
+
+  if (!product) {
+    return { notFound: true }
+  }
 
   return {
     props: {
@@ -31,8 +45,11 @@ export async function getStaticProps(context) {
 }
 
 export async function getStaticPaths() {
+  const data = await getData()
+  const ids = data.products.map((product) => product.id)
+  const pathsWithParams = ids.map((id) => ({ params: { pid: id } }))
   return {
-    paths: [{ params: { pid: "p1" } }, { params: { pid: "p2" } }, { params: { pid: "p3" } }],
-    fallback: false,
+    paths: pathsWithParams,
+    fallback: true,
   }
 }
