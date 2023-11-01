@@ -2,7 +2,7 @@ import React, { Fragment } from "react"
 import fs from "fs/promises"
 import path from "path"
 
-export default function ProductDetailPage() {
+export default function ProductDetailPage(props) {
   const { loadedProduct } = props
   return (
     <Fragment>
@@ -13,12 +13,19 @@ export default function ProductDetailPage() {
 }
 
 export async function getStaticProps(context) {
+  // get id for pre-rendering page on server
   const { params } = context
   const productId = params.pid
-
+  //parse json data
   const dataPath = path.join(process.cwd(), "data", "dummy-data.json")
   const jsonData = await fs.readFile(dataPath)
   const data = JSON.parse(jsonData)
-
+  // find product by id
   const product = data.product.find((product) => product.id === productId)
+
+  return {
+    props: {
+      loadedProduct: product,
+    },
+  }
 }
